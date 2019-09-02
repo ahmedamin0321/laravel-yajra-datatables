@@ -128,9 +128,9 @@
                             }
                         }
                     };
-                } else if(value.includes(':')){
-                    // For extra attribute, e.g, searchable: false
-                    let splitted = value.split(':');
+                } else if(value.includes(':=')){
+                    // For extra attribute, e.g, searchable:= false
+                    let splitted = value.split(':=');
                     obj = {data: key, name: key};
                     obj[splitted[0]] = splitted[1];
                 } else{
