@@ -68,81 +68,70 @@
         let autoRenderColumns = @json(@$bag['autoRenders']);
         let extraActions = @json(@$bag['extraActions']);
 
+        console.log('columnsObj',columnsObj)
+
         for (let key in columnsObj) {
 
 
             let value = columnsObj[key];
             let obj = {data: value, name: value};
 
-
             // if (isNaN(key)) {
             //     obj = {data: key, name: value};
             // }
 
-            // TODO below part needs to be improved. (by implementing the fname+lmane functionality)
+
             if (isNaN(key)) {
-                obj = {
-                    "render": function (data, type, row, meta) {
-                        if (row) {
-                            let output = '';
+                // TODO below part needs to be improved. (by implementing the fname+lmane functionality)
+                if(typeof value === "object"){
+                    obj = {
+                        "render": function (data, type, row, meta) {
+                            if (row) {
+                                let output = '';
 
-                            if (typeof value === "object") {
-                                if (!value.type)
-                                    return '';
+                                    if (!value.type)
+                                        return '';
 
-                                let columnValue = filterForEval('row', row, key);
-                                classes = value.classes ? value.classes : '';
+                                    let columnValue = filterForEval('row', row, key);
+                                    classes = value.classes ? value.classes : '';
 
-                                let extraAttributes = [];
-                                if (value.extraAttributes) {
-                                    for (let key in value.extraAttributes) {
-                                        let attribute = value.extraAttributes[key];
-                                        let matches = attribute.match(/\{(.*?)\}/);
-                                        if (matches) {
-                                            let matchedWord = matches[1];
-                                            firstHalf = attribute.split('{')[0];
-                                            secondHalf = attribute.split('}')[1];
-                                            attribute = firstHalf + eval(`row.${matchedWord}`) + secondHalf;
+                                    let extraAttributes = [];
+                                    if (value.extraAttributes) {
+                                        for (let key in value.extraAttributes) {
+                                            let attribute = value.extraAttributes[key];
+                                            let matches = attribute.match(/\{(.*?)\}/);
+                                            if (matches) {
+                                                let matchedWord = matches[1];
+                                                firstHalf = attribute.split('{')[0];
+                                                secondHalf = attribute.split('}')[1];
+                                                attribute = firstHalf + eval(`row.${matchedWord}`) + secondHalf;
+                                            }
+                                            extraAttributes.push(attribute);
                                         }
-                                        extraAttributes.push(attribute);
                                     }
-                                }
-                                extraAttributes = extraAttributes.join(' ');
+                                    extraAttributes = extraAttributes.join(' ');
 
-                                switch (value.type) {
-                                    case 'dropdown':
-                                        let options = '';
+                                    switch (value.type) {
+                                        case 'dropdown':
+                                            let options = '';
 
-                                        value.data.forEach((option, i) => {
-                                            options += `<option value="${i}" ${columnValue == i ? 'selected' : ''}>${option}</option>`;
-                                        });
-                                        output = `<select class="form-control ${classes}" ${extraAttributes}>${options}</select>`;
-                                        break;
-                                    // TODO, add other types. e.g. text,checkbox,radio,textarea
-                                }
-                            } else {
-                                let matches = value.match(/\@{{(.*?)\}}/);
-                                if (matches) {
-                                    let valueFirstHalf = value.split('@{{')[0];
-                                    let valueSecondHalf = value.split('}}')[1];
-                                    let matchedWord = matches[1];
-
-                                    let matchesVariable = matchedWord.match(/\{(.*?)\}/);
-                                    if (matchesVariable) {
-                                        let matchesVariableWord = matchesVariable[1];
-                                        let variable = eval(`row.${matchesVariableWord}`);
-                                        firstHalf = matchedWord.split('{')[0];
-                                        secondHalf = matchedWord.split('}')[1];
-                                        output = eval(firstHalf + variable + secondHalf);
+                                            value.data.forEach((option, i) => {
+                                                options += `<option value="${i}" ${columnValue == i ? 'selected' : ''}>${option}</option>`;
+                                            });
+                                            output = `<select class="form-control ${classes}" ${extraAttributes}>${options}</select>`;
+                                            break;
+                                        // TODO, add other types. e.g. text,checkbox,radio,textarea
                                     }
-                                    output = valueFirstHalf + output + valueSecondHalf;
-                                }
+
+                                return output;
                             }
-
-                            return output;
                         }
-                    }
-                };
+                    };
+                } else if(value.includes(':')){
+                    let splitted = value.split(':');
+                    obj = {data: key, name: key};
+                    obj[splitted[0]] = splitted[1];
+                }
             }
             // END
 
@@ -255,7 +244,7 @@
             url = '{{$bag['url']}}';
         @endif
 
-        @if(isset($bag['table_selector']) && $bag['table_selector'])
+                @if(isset($bag['table_selector']) && $bag['table_selector'])
             table_selector = '{{$bag['table_selector']}}';
         @endif
             table = $(table_selector).DataTable({
