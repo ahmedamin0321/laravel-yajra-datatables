@@ -68,8 +68,6 @@
         let autoRenderColumns = @json(@$bag['autoRenders']);
         let extraActions = @json(@$bag['extraActions']);
 
-        console.log('columnsObj',columnsObj)
-
         for (let key in columnsObj) {
 
 
@@ -135,7 +133,7 @@
                     obj[splitted[0]] = splitted[1];
                 } else{
                     // For custom condition, e.g. status?1:'Active':'Inactive'
-                    let obj={
+                    obj={
                         "render": function (data, type, row, meta) {
                             if (row) {
                                 let output = '';
