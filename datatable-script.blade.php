@@ -154,7 +154,7 @@
                                     }
                                     output = valueFirstHalf + output + valueSecondHalf;
                                 }else{
-                                    eval(`row.${value}`)
+                                    output = eval(`row.${value}`)
                                 }
                                 return output;
                             }
