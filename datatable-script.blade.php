@@ -127,16 +127,18 @@
                         }
                     };
                 } else if(value.includes(':=')){
+                    console.log('elseif',value)
                     // For extra attribute, e.g, searchable:= false
                     let splitted = value.split(':=');
                     obj = {data: key, name: key};
                     obj[splitted[0]] = splitted[1];
                 } else{
+                    console.log('else',value)
                     // For custom condition, e.g. status?1:'Active':'Inactive'
                     obj={
                         "render": function (data, type, row, meta) {
                             if (row) {
-                                let output = '';
+                                let output = eval(`row.${value}`);
                                 let matches = value.match(/\@{{(.*?)\}}/);
                                 if (matches) {
                                     let valueFirstHalf = value.split('@{{')[0];
