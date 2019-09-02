@@ -249,11 +249,16 @@
             columns.push(culomn)
         }
 
-        let url = `{{url($base_url)}}/${title.plural.toLowerCase()}/get-basic-data`;
+        let url = `{{url($base_url)}}/${title.plural.toLowerCase()}/get-basic-data`,
+            table_selector = '#data-table';
         @if(isset($bag['url']) && $bag['url'])
             url = '{{$bag['url']}}';
         @endif
-            table = $('#data-table').DataTable({
+
+        @if(isset($bag['table_selector']) && $bag['table_selector'])
+            table_selector = '{{$bag['table_selector']}}';
+        @endif
+            table = $(table_selector).DataTable({
             processing: true,
             serverSide: true,
             ajax: url,
