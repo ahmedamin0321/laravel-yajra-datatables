@@ -133,12 +133,11 @@
                     obj = {data: key, name: key};
                     obj[splitted[0]] = splitted[1];
                 } else{
-                    console.log('else',value)
                     // For custom condition, e.g. status?1:'Active':'Inactive'
                     obj={
                         "render": function (data, type, row, meta) {
                             if (row) {
-                                let output = eval(`row.${value}`);
+                                let output = '';
                                 let matches = value.match(/\@{{(.*?)\}}/);
                                 if (matches) {
                                     let valueFirstHalf = value.split('@{{')[0];
@@ -154,6 +153,8 @@
                                         output = eval(firstHalf + variable + secondHalf);
                                     }
                                     output = valueFirstHalf + output + valueSecondHalf;
+                                }else{
+                                    eval(`row.${value}`)
                                 }
                                 return output;
                             }
