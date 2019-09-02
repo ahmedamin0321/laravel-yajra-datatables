@@ -84,6 +84,7 @@
             if (isNaN(key)) {
                 // TODO below part needs to be improved. (by implementing the fname+lmane functionality)
                 if(typeof value === "object"){
+                    // For inputs in column
                     obj = {
                         "render": function (data, type, row, meta) {
                             if (row) {
@@ -128,9 +129,36 @@
                         }
                     };
                 } else if(value.includes(':')){
+                    // For extra attribute, e.g, searchable: false
                     let splitted = value.split(':');
                     obj = {data: key, name: key};
                     obj[splitted[0]] = splitted[1];
+                } else{
+                    // For custom condition, e.g. status?1:'Active':'Inactive'
+                    let obj={
+                        "render": function (data, type, row, meta) {
+                            if (row) {
+                                let output = '';
+                                let matches = value.match(/\@{{(.*?)\}}/);
+                                if (matches) {
+                                    let valueFirstHalf = value.split('@{{')[0];
+                                    let valueSecondHalf = value.split('}}')[1];
+                                    let matchedWord = matches[1];
+
+                                    let matchesVariable = matchedWord.match(/\{(.*?)\}/);
+                                    if (matchesVariable) {
+                                        let matchesVariableWord = matchesVariable[1];
+                                        let variable = eval(`row.${matchesVariableWord}`);
+                                        firstHalf = matchedWord.split('{')[0];
+                                        secondHalf = matchedWord.split('}')[1];
+                                        output = eval(firstHalf + variable + secondHalf);
+                                    }
+                                    output = valueFirstHalf + output + valueSecondHalf;
+                                }
+                                return output;
+                            }
+                        }
+                    }
                 }
             }
             // END
