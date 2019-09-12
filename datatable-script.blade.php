@@ -209,7 +209,7 @@
                                             return formattedTime(columnValue);
                                         case 'datetime':
                                             // returning formatted datetime
-                                            return formattedTime(columnValue, true);
+                                            return formattedDate(columnValue, true);
                                         case contains(renderType, 'limit_'):
                                             let limit = parseInt(renderType.replace('limit_', '')) || 0;
 
