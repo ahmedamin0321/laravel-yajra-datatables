@@ -81,60 +81,59 @@
 
             if (isNaN(key)) {
                 // TODO below part needs to be improved. (by implementing the fname+lmane functionality)
-                if(typeof value === "object"){
+                if (typeof value === "object") {
                     // For inputs in column
                     obj = {
                         "render": function (data, type, row, meta) {
                             if (row) {
                                 let output = '';
 
-                                    if (!value.type)
-                                        return '';
+                                if (!value.type)
+                                    return '';
 
-                                    let columnValue = filterForEval('row', row, key);
-                                    classes = value.classes ? value.classes : '';
+                                let columnValue = filterForEval('row', row, key);
+                                classes = value.classes ? value.classes : '';
 
-                                    let extraAttributes = [];
-                                    if (value.extraAttributes) {
-                                        for (let key in value.extraAttributes) {
-                                            let attribute = value.extraAttributes[key];
-                                            let matches = attribute.match(/\{(.*?)\}/);
-                                            if (matches) {
-                                                let matchedWord = matches[1];
-                                                firstHalf = attribute.split('{')[0];
-                                                secondHalf = attribute.split('}')[1];
-                                                attribute = firstHalf + eval(`row.${matchedWord}`) + secondHalf;
-                                            }
-                                            extraAttributes.push(attribute);
+                                let extraAttributes = [];
+                                if (value.extraAttributes) {
+                                    for (let key in value.extraAttributes) {
+                                        let attribute = value.extraAttributes[key];
+                                        let matches = attribute.match(/\{(.*?)\}/);
+                                        if (matches) {
+                                            let matchedWord = matches[1];
+                                            firstHalf = attribute.split('{')[0];
+                                            secondHalf = attribute.split('}')[1];
+                                            attribute = firstHalf + eval(`row.${matchedWord}`) + secondHalf;
                                         }
+                                        extraAttributes.push(attribute);
                                     }
-                                    extraAttributes = extraAttributes.join(' ');
+                                }
+                                extraAttributes = extraAttributes.join(' ');
 
-                                    switch (value.type) {
-                                        case 'dropdown':
-                                            let options = '';
+                                switch (value.type) {
+                                    case 'dropdown':
+                                        let options = '';
 
-                                            value.data.forEach((option, i) => {
-                                                options += `<option value="${i}" ${columnValue == i ? 'selected' : ''}>${option}</option>`;
-                                            });
-                                            output = `<select class="form-control ${classes}" ${extraAttributes}>${options}</select>`;
-                                            break;
-                                        // TODO, add other types. e.g. text,checkbox,radio,textarea
-                                    }
+                                        value.data.forEach((option, i) => {
+                                            options += `<option value="${i}" ${columnValue == i ? 'selected' : ''}>${option}</option>`;
+                                        });
+                                        output = `<select class="form-control ${classes}" ${extraAttributes}>${options}</select>`;
+                                        break;
+                                    // TODO, add other types. e.g. text,checkbox,radio,textarea
+                                }
 
                                 return output;
                             }
                         }
                     };
-                } else if(value.includes(':=')){
-                    console.log('elseif',value)
+                } else if (value.includes(':=')) {
                     // For extra attribute, e.g, searchable:= false
                     let splitted = value.split(':=');
                     obj = {data: key, name: key};
                     obj[splitted[0]] = splitted[1];
-                } else{
+                } else {
                     // For custom condition, e.g. status?1:'Active':'Inactive'
-                    obj={
+                    obj = {
                         "render": function (data, type, row, meta) {
                             if (row) {
                                 let output = '';
@@ -153,7 +152,7 @@
                                         output = eval(firstHalf + variable + secondHalf);
                                     }
                                     output = valueFirstHalf + output + valueSecondHalf;
-                                }else{
+                                } else {
                                     output = eval(`row.${value}`)
                                 }
                                 return output;
@@ -179,8 +178,10 @@
                                         // break;
                                         case 'time':
                                             // returning formatted time
-                                            // return formattedTime(columnValue);
-                                            break;
+                                            return formattedTime(columnValue);
+                                        case 'datetime':
+                                            // returning formatted datetime
+                                            return formattedTime(columnValue, true);
                                         case contains(renderType, 'limit_'):
                                             let limit = parseInt(renderType.replace('limit_', '')) || 0;
 
