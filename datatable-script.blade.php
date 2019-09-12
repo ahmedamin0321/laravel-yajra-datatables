@@ -7,6 +7,7 @@
 <script>
 
     let title = @json($titleObj);
+    const base_url = '{{$base_url?$base_url:url('')}}';
     let canEdit = false, canDelete = false;
     {{--    @can('edit '.strtolower($titleObj['singular']))--}}
         canEdit = true;
@@ -17,6 +18,29 @@
 
     let canEditOrDelete = canEdit || canDelete;
 
+    let table_selector = '#data-table';
+    @if(isset($bag['table_selector']) && $bag['table_selector'])
+        table_selector = '{{$bag['table_selector']}}';
+    @endif
+
+    if (typeof swalWithBootstrapButtons === 'undefined')
+        swalWithBootstrapButtons = swal.mixin({
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger',
+            buttonsStyling: false,
+        });
+
+    function matchRecursion(string, obj) {
+        matches = string.match(/\${(.*?)\}/);
+        if (matches) {
+            string = string.replace(matches[0], `"${obj[matches[1]]}"`);
+            matches = string.match(/\${(.*?)\}/);
+            if (matches)
+                return matchRecursion(string, obj);
+        }
+        return string;
+    }
+
 </script>
 @if(isset($bag['actions']) && $bag['actions'])
     <script>
@@ -24,7 +48,7 @@
 
         $(document).on('click', '.deleteRow', function () {
             let id = $(this).data('id');
-            swalWithBootstrapButtons({
+            swalWithBootstrapButtons.fire({
                 title: 'Are you sure?',
                 text: "You want to delete this " + title.singular.toLowerCase(),
                 type: 'warning',
@@ -44,7 +68,7 @@
                         success: function (response) {
                             if (response.success)
                                 table.ajax.reload();
-                            swalWithBootstrapButtons(response.title, response.message, response.type);
+                            swalWithBootstrapButtons.fire(response.title, response.message, response.type);
                         }
                     });
                 }
@@ -81,60 +105,63 @@
 
             if (isNaN(key)) {
                 // TODO below part needs to be improved. (by implementing the fname+lmane functionality)
-                if(typeof value === "object"){
+                if (typeof value === "object") {
                     // For inputs in column
                     obj = {
                         "render": function (data, type, row, meta) {
                             if (row) {
                                 let output = '';
 
-                                    if (!value.type)
-                                        return '';
+                                if (!value.type)
+                                    return '';
 
-                                    let columnValue = filterForEval('row', row, key);
-                                    classes = value.classes ? value.classes : '';
+                                let columnValue = filterForEval('row', row, key);
+                                classes = value.classes ? value.classes : '';
 
-                                    let extraAttributes = [];
-                                    if (value.extraAttributes) {
-                                        for (let key in value.extraAttributes) {
-                                            let attribute = value.extraAttributes[key];
-                                            let matches = attribute.match(/\{(.*?)\}/);
-                                            if (matches) {
-                                                let matchedWord = matches[1];
-                                                firstHalf = attribute.split('{')[0];
-                                                secondHalf = attribute.split('}')[1];
-                                                attribute = firstHalf + eval(`row.${matchedWord}`) + secondHalf;
-                                            }
-                                            extraAttributes.push(attribute);
+                                let extraAttributes = [];
+                                if (value.extraAttributes) {
+                                    for (let key in value.extraAttributes) {
+                                        let attribute = value.extraAttributes[key];
+                                        let matches = attribute.match(/\{(.*?)\}/);
+                                        if (matches) {
+                                            let matchedWord = matches[1];
+                                            firstHalf = attribute.split('{')[0];
+                                            secondHalf = attribute.split('}')[1];
+                                            attribute = firstHalf + eval(`row.${matchedWord}`) + secondHalf;
                                         }
+                                        extraAttributes.push(attribute);
                                     }
-                                    extraAttributes = extraAttributes.join(' ');
+                                }
+                                extraAttributes = extraAttributes.join(' ');
 
-                                    switch (value.type) {
-                                        case 'dropdown':
-                                            let options = '';
+                                switch (value.type) {
+                                    case 'custom':
+                                        let code = matchRecursion(value.js_code, row);
+                                        output = eval(code);
+                                        break;
+                                    case 'dropdown':
+                                        let options = '';
 
-                                            value.data.forEach((option, i) => {
-                                                options += `<option value="${i}" ${columnValue == i ? 'selected' : ''}>${option}</option>`;
-                                            });
-                                            output = `<select class="form-control ${classes}" ${extraAttributes}>${options}</select>`;
-                                            break;
-                                        // TODO, add other types. e.g. text,checkbox,radio,textarea
-                                    }
+                                        value.data.forEach((option, i) => {
+                                            options += `<option value="${i}" ${columnValue == i ? 'selected' : ''}>${option}</option>`;
+                                        });
+                                        output = `<select class="form-control ${classes}" ${extraAttributes}>${options}</select>`;
+                                        break;
+                                    // TODO, add other types. e.g. text,checkbox,radio,textarea
+                                }
 
                                 return output;
                             }
                         }
                     };
-                } else if(value.includes(':=')){
-                    console.log('elseif',value)
+                } else if (value.includes(':=')) {
                     // For extra attribute, e.g, searchable:= false
                     let splitted = value.split(':=');
                     obj = {data: key, name: key};
                     obj[splitted[0]] = splitted[1];
-                } else{
+                } else {
                     // For custom condition, e.g. status?1:'Active':'Inactive'
-                    obj={
+                    obj = {
                         "render": function (data, type, row, meta) {
                             if (row) {
                                 let output = '';
@@ -153,7 +180,7 @@
                                         output = eval(firstHalf + variable + secondHalf);
                                     }
                                     output = valueFirstHalf + output + valueSecondHalf;
-                                }else{
+                                } else {
                                     output = eval(`row.${value}`)
                                 }
                                 return output;
@@ -198,8 +225,9 @@
 
         if ((actions && canEditOrDelete) || extraActions) {
 
-            if ($('#data-table th.actions').length < 1) {
-                $('#data-table thead tr').append('<th class="actions">Actions</th>');
+            if ($(table_selector + ' th.actions').length < 1) {
+                $(table_selector + ' thead tr').append('<th class="actions">Actions</th>');
+                $(table_selector + ' tfoot tr').append('<th class="actions">Actions</th>');
             }
 
             let renderKey = 'id';
@@ -267,15 +295,11 @@
             columns.push(culomn)
         }
 
-        let url = `{{url($base_url)}}/${title.plural.toLowerCase()}/get-basic-data`,
-            table_selector = '#data-table';
+        let url = `{{url($base_url)}}/${title.plural.toLowerCase()}/get-basic-data`;
         @if(isset($bag['url']) && $bag['url'])
             url = '{{$bag['url']}}';
         @endif
 
-                @if(isset($bag['table_selector']) && $bag['table_selector'])
-            table_selector = '{{$bag['table_selector']}}';
-        @endif
             table = $(table_selector).DataTable({
             processing: true,
             serverSide: true,
