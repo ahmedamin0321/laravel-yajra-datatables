@@ -33,7 +33,9 @@
     function matchRecursion(string, obj) {
         matches = string.match(/\${(.*?)\}/);
         if (matches) {
-            string = string.replace(matches[0], `"${obj[matches[1]]}"`);
+            let value = obj[matches[1]];
+            value = value ? value : '';
+            string = string.replace(matches[0], `"${value}"`);
             matches = string.match(/\${(.*?)\}/);
             if (matches)
                 return matchRecursion(string, obj);
@@ -281,17 +283,33 @@
 
                     const renderValue = eval(`row.${renderKey}`);
 
-                    if (actions && canEdit) {
-                        let edit = `<a class='text-primary' title='Edit' href="{{url($base_url)}}/${title.plural.toLowerCase()}/${renderValue}/edit"><i class="fa fa-edit"></i></a>`;
-                        actionButtons.push(edit);
+                    // Checking if separate action exit, then it will ignore the default edit,delete functionality.
+                    let separateActions = actions.separateActions;
+                    if (separateActions) {
+                        if (separateActions.edit){
+                            let code = matchRecursion(separateActions.edit, row);
+                            output = eval(code);
+                            actionButtons.push(output);
+                        }
+
+                        if (separateActions.delete){
+                            let code = matchRecursion(separateActions.delete, row);
+                            output = eval(code);
+                            actionButtons.push(output);
+                        }
+                    }else{
+                        if (actions && canEdit) {
+                            let edit = `<a class='text-primary' title='Edit' href="{{url($base_url)}}/${title.plural.toLowerCase()}/${renderValue}/edit"><i class="fa fa-edit"></i></a>`;
+                            actionButtons.push(edit);
+                        }
+
+                        if (actions && canDelete) {
+                            let del = `<a class='text-danger deleteRow' title='Delete' href="javascript:void(0)" data-id="${renderValue}"><i class="fa fa-trash"></i></a>`;
+                            actionButtons.push(del);
+                        }
                     }
 
-                    if (actions && canDelete) {
-                        let del = `<a class='text-danger deleteRow' title='Delete' href="javascript:void(0)" data-id="${renderValue}"><i class="fa fa-trash"></i></a>`;
-                        actionButtons.push(del);
-                    }
-
-                    return actionButtons.join('&nbsp / &nbsp');
+                    return actionButtons.filter(function(el) { return el; }).join('&nbsp / &nbsp');
                 }
             };
             columns.push(culomn)
