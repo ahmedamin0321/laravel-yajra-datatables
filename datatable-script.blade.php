@@ -209,7 +209,7 @@
 
             if (autoRenderColumns) {
                 for (let columnName in autoRenderColumns) {
-                    if (columnName == value) {
+                    if (columnName == value || columnName == key) {
                         let renderType = autoRenderColumns[columnName];
                         obj = {
                             "render": function (data, type, row, meta) {
@@ -347,7 +347,7 @@
         datatableExtraProps.forEach(function (prop) {
             datatableProps[prop.key] = prop.value;
         });
-        
+
         table = $(table_selector).DataTable(datatableProps);
     });
 </script>
