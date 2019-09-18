@@ -23,6 +23,14 @@
         table_selector = '{{$bag['table_selector']}}';
     @endif
 
+    // Extra Variables
+    let extraVariables = [];
+
+    @if(isset($bag['extraVariables']) && $bag['extraVariables'])
+        extraVariables = @json($bag['extraVariables']);
+    @endif
+    console.log('extraVariables', extraVariables)
+
     if (typeof swalWithBootstrapButtons === 'undefined')
         swalWithBootstrapButtons = swal.mixin({
             confirmButtonClass: 'btn btn-success',
@@ -50,6 +58,8 @@
 
         $(document).on('click', '.deleteRow', function () {
             let id = $(this).data('id');
+            let delete_url = $(this).data('url');
+            delete_url = delete_url ? delete_url : `{{url($base_url)}}/${title.plural.toLowerCase()}/${id}`;
             swalWithBootstrapButtons.fire({
                 title: 'Are you sure?',
                 text: "You want to delete this " + title.singular.toLowerCase(),
@@ -62,7 +72,7 @@
                 if (result.value) {
                     $.ajax({
                         type: 'POST',
-                        url: `{{url($base_url)}}/${title.plural.toLowerCase()}/${id}`,
+                        url: delete_url,
                         data: {
                             _method: 'DELETE',
                             _token: '{{csrf_token()}}'
@@ -286,18 +296,18 @@
                     // Checking if separate action exit, then it will ignore the default edit,delete functionality.
                     let separateActions = actions.separateActions;
                     if (separateActions) {
-                        if (separateActions.edit){
+                        if (separateActions.edit) {
                             let code = matchRecursion(separateActions.edit, row);
                             output = eval(code);
                             actionButtons.push(output);
                         }
 
-                        if (separateActions.delete){
+                        if (separateActions.delete) {
                             let code = matchRecursion(separateActions.delete, row);
                             output = eval(code);
                             actionButtons.push(output);
                         }
-                    }else{
+                    } else {
                         if (actions && canEdit) {
                             let edit = `<a class='text-primary' title='Edit' href="{{url($base_url)}}/${title.plural.toLowerCase()}/${renderValue}/edit"><i class="fa fa-edit"></i></a>`;
                             actionButtons.push(edit);
@@ -309,7 +319,9 @@
                         }
                     }
 
-                    return actionButtons.filter(function(el) { return el; }).join('&nbsp / &nbsp');
+                    return actionButtons.filter(function (el) {
+                        return el;
+                    }).join('&nbsp / &nbsp');
                 }
             };
             columns.push(culomn)
