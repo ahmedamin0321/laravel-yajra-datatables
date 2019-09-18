@@ -29,7 +29,6 @@
     @if(isset($bag['extraVariables']) && $bag['extraVariables'])
         extraVariables = @json($bag['extraVariables']);
     @endif
-    console.log('extraVariables', extraVariables)
 
     if (typeof swalWithBootstrapButtons === 'undefined')
         swalWithBootstrapButtons = swal.mixin({
@@ -215,7 +214,6 @@
                                         case 'date':
                                             // returning formatted date
                                             return formattedDate(columnValue);
-                                        // break;
                                         case 'time':
                                             // returning formatted time
                                             return formattedTime(columnValue);
@@ -224,9 +222,10 @@
                                             return formattedDate(columnValue, true);
                                         case contains(renderType, 'limit_'):
                                             let limit = parseInt(renderType.replace('limit_', '')) || 0;
-
                                             return (columnValue && columnValue.length > limit) ? columnValue.substr(0, limit) + ' ....' : columnValue;
-                                        // break;
+                                        case 'money':
+                                            // returning numbers in money format
+                                            return isNaN(columnValue) ? columnValue : parseInt(columnValue).toLocaleString();
                                     }
                                 }
                             }
