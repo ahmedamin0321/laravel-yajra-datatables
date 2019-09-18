@@ -25,9 +25,14 @@
 
     // Extra Variables
     let extraVariables = [];
-
     @if(isset($bag['extraVariables']) && $bag['extraVariables'])
         extraVariables = @json($bag['extraVariables']);
+    @endif
+
+    // DataTable Extra Props
+    let datatableExtraProps = [];
+    @if(isset($bag['datatableExtraProps']) && $bag['datatableExtraProps'])
+        datatableExtraProps = @json($bag['datatableExtraProps']);
     @endif
 
     if (typeof swalWithBootstrapButtons === 'undefined')
@@ -329,14 +334,20 @@
         let url = `{{url($base_url)}}/${title.plural.toLowerCase()}/get-basic-data`;
         @if(isset($bag['url']) && $bag['url'])
             url = '{{$bag['url']}}';
-        @endif
+                @endif
 
-            table = $(table_selector).DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: url,
-            columns
 
+        let datatableProps = {
+                processing: true,
+                serverSide: true,
+                ajax: url,
+                columns
+            };
+
+        datatableExtraProps.forEach(function (prop) {
+            datatableProps[prop.key] = prop.value;
         });
+        
+        table = $(table_selector).DataTable(datatableProps);
     });
 </script>
