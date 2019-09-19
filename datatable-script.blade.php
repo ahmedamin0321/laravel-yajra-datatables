@@ -45,7 +45,7 @@
     function matchRecursion(string, obj) {
         matches = string.match(/\${(.*?)\}/);
         if (matches) {
-            let value = obj[matches[1]];
+            let value = eval('obj.' + matches[1]);
             value = value ? value : '';
             string = string.replace(matches[0], `"${value}"`);
             matches = string.match(/\${(.*?)\}/);
