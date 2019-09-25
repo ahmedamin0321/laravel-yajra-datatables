@@ -45,7 +45,11 @@
     function matchRecursion(string, obj) {
         matches = string.match(/\${(.*?)\}/);
         if (matches) {
-            let value = eval('obj.' + matches[1]);
+            let value = null;
+            try {
+                value = eval('obj.' + matches[1]);
+            } catch (e) {
+            }
             value = value ? value : '';
             string = string.replace(matches[0], `"${value}"`);
             matches = string.match(/\${(.*?)\}/);
@@ -197,7 +201,11 @@
                                     }
                                     output = valueFirstHalf + output + valueSecondHalf;
                                 } else {
-                                    output = eval(`row.${value}`)
+                                    try{
+                                        output = eval(`row.${value}`);
+                                    }catch(e){
+                                        output='';
+                                    }
                                 }
                                 return output;
                             }
