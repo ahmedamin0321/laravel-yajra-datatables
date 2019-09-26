@@ -306,8 +306,8 @@
                     const renderValue = eval(`row.${renderKey}`);
 
                     // Checking if separate action exit, then it will ignore the default edit,delete functionality.
+                    if (actions && actions.separateActions) {
                     let separateActions = actions.separateActions;
-                    if (separateActions) {
                         if (separateActions.edit) {
                             let code = matchRecursion(separateActions.edit, row);
                             output = eval(code);
