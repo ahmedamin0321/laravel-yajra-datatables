@@ -201,10 +201,10 @@
                                     }
                                     output = valueFirstHalf + output + valueSecondHalf;
                                 } else {
-                                    try{
+                                    try {
                                         output = eval(`row.${value}`);
-                                    }catch(e){
-                                        output='';
+                                    } catch (e) {
+                                        output = '';
                                     }
                                 }
                                 return output;
@@ -305,9 +305,14 @@
 
                     const renderValue = eval(`row.${renderKey}`);
 
+                    // Can Edit and Can Delete enable and disable functionality
+                    canEdit = actions.canEdit !== undefined ? actions.canEdit : canEdit;
+                    canDelete = actions.canDelete !== undefined ? actions.canDelete : canDelete;
+
                     // Checking if separate action exit, then it will ignore the default edit,delete functionality.
+
                     if (actions && actions.separateActions) {
-                    let separateActions = actions.separateActions;
+                        let separateActions = actions.separateActions;
                         if (separateActions.edit) {
                             let code = matchRecursion(separateActions.edit, row);
                             output = eval(code);
